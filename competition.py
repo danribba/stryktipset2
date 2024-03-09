@@ -4,8 +4,9 @@ import urllib.request
 from getPoisson import *
 from game import *
 from matchResult import *
-import statistics
-import pdb
+
+
+
 
 
 
@@ -22,7 +23,42 @@ class Competition:
 
         def printGames(self):
                 for i, game in enumerate(self.games, start=1):
-                        print(f"Match {i}: {game.homeTeam} vs {game.awayTeam}, Resultat: {game.homeGoals}-{game.awayGoals}")
+                        print(f"Match {i}: {game.homeTeam} vs {game.awayTeam}, Resultat: {game.homeGoals}-{game.awayGoals}, Sannolikhet för hemmaseger: {game.homeProb}, Sannolikhet för oavgjort: {game.drawProb}, Sannolikhet för bortaseger: {game.awayProb}")
+        
+        def addBets(self):
+                for game in self.games:
+                        highest_prob = max(game.homeProb, game.awayProb, game.drawProb)
+                        if highest_prob == game.homeProb:
+                                game.bet = "home"
+                        elif highest_prob == game.awayProb:
+                                game.bet = "away"
+                        else:
+                                game.bet = "draw"
+        
+        def exportToExcel(self, filename):
+                # Create a DataFrame from the games list
+                df = pd.DataFrame([vars(game) for game in self.games])
+
+                # Write the DataFrame to an Excel file
+                df.to_excel(filename, index=False)
+                
+        def exportToCSV(self, filename):
+                with open(filename, 'w', newline='') as csvfile:
+                        fieldnames = ['homeTeam', 'awayTeam', 'homeGoals', 'awayGoals', 'homeProb', 'drawProb', 'awayProb', 'bet']
+                        writer = csv.DictWriter(csvfile, fieldnames=fieldnames)
+
+                        writer.writeheader()
+                        for game in self.games:
+                                writer.writerow({
+                                        'homeTeam': game.homeTeam,
+                                        'awayTeam': game.awayTeam,
+                                        'homeGoals': game.homeGoals,
+                                        'awayGoals': game.awayGoals,
+                                        'homeProb': game.homeProb,
+                                        'drawProb': game.drawProb,
+                                        'awayProb': game.awayProb,
+                                        'bet': game.bet
+                })
         
         def clearMatches(self):
                 self.games = []
@@ -61,16 +97,18 @@ class Competition:
                                 game = Game(row[3], row[4], int(row[5]), int(row[6]), self.calculateAttackStrengthOfHomeTeam(row[3]), self.calculateAttackStrengthOfAwayTeam(row[4]))
                         else:
                                 game = Game(row[3], row[4], int(row[5]), int(row[6]), 1, 1)
-
+                        
                         self.games.append(game)
                         self.numberOfMatches += 1
                         self.numberOfHomeGoals += game.homeGoals
                         self.numberOfAwayGoals += game.awayGoals
+                        self.saveProbabilitiesToGame(game)
                         if row[3] not in self.teamNames:
                                 self.teamNames.append(row[3])
+                        self.averageNumberOfHomeGoals = self.numberOfHomeGoals / self.numberOfMatches
+                        self.averageNumberOfAwayGoals = self.numberOfAwayGoals / self.numberOfMatches                        
 
-                self.averageNumberOfHomeGoals = self.numberOfHomeGoals / self.numberOfMatches
-                self.averageNumberOfAwayGoals = self.numberOfAwayGoals / self.numberOfMatches
+
                 
                 self.teamNames.sort()
 
@@ -90,29 +128,7 @@ class Competition:
                 
                 
 
-        def get1X2(self, hTeamStrength, aTeamStrength):
-                # Printar 1 x 2 i %'
-                homeProb = 0
-                awayProb = 0
-                drawProb = 0
-                results = []
-                for x in range (0,10):
-                        for y in range(0,10):           
-                                result = MatchResult(str(x)+"-"+str(y),getPoisson(hTeamStrength,x,1)*getPoisson(aTeamStrength,y,1))
-                                results.append(result)
-                                if x > y:
-                                        homeProb += result.probability
-                                if y > x:
-                                        awayProb += result.probability
-                                if y==x:
-                                        drawProb += result.probability
-
-                newList = sorted(results,key=lambda result: result.probability)
-                newList.reverse()
-                
-                print("1:", "{:.2%}".format(homeProb), "X:", "{:.2%}".format(drawProb), " 2:","{:.2%}".format(awayProb))
-                print("------------------------------")
-             
+            
         def getAllResults(self, couponRow):
                 # Uppdaterad version där vi skickar in en kupongrad för att att få ut de specifika värdena för 1 X 2
                 # 2023-04-15
@@ -120,11 +136,11 @@ class Competition:
                 homeProb = 0
                 awayProb = 0
                 drawProb = 0
-                results = []
+                #results = []
                 for x in range (0,10):
                         for y in range(0,10):           
                                 result = MatchResult(str(x)+"-"+str(y),getPoisson(self.calculateHomeTeamGoalExpectancy(couponRow.homeTeam, couponRow.awayTeam),x,1) * getPoisson(self.calculateAwayTeamGoalExpectancy(couponRow.homeTeam, couponRow.awayTeam),y,1))
-                                results.append(result)
+                                #results.append(result)
                                 if x > y:
                                         homeProb += result.probability
                                 elif y > x:
@@ -136,7 +152,29 @@ class Competition:
                 couponRow.drawProb= "{:.2%}".format(drawProb)
                 couponRow.awayProb= "{:.2%}".format(awayProb)
                
-               
+        def saveProbabilitiesToGame(self, game):
+                # För att spara ner den troliga utgången i samband med att vi sparar ner varje match.  
+                #anropas från loadmatches            
+                homeProb = 0
+                awayProb = 0
+                drawProb = 0
+                #print("nu kör vi "+game.homeTeam)
+                
+                for x in range (0,10):
+                        #print(str(x))
+                        for y in range(0,10):           
+                                result = MatchResult(str(x)+"-"+str(y),getPoisson(self.calculateHomeTeamGoalExpectancy(game.homeTeam, game.awayTeam),x,1) * getPoisson(self.calculateAwayTeamGoalExpectancy(game.homeTeam, game.awayTeam),y,1))
+                                if x > y:
+                                        homeProb += result.probability
+                                elif y > x:
+                                        awayProb += result.probability
+                                else:
+                                        drawProb += result.probability
+                #print("Sannolikhet hemma: " + str(homeProb))
+                self.games[-1].homeProb = "{:.2%}".format(homeProb)
+                self.games[-1].drawProb = "{:.2%}".format(drawProb)
+                self.games[-1].awayProb = "{:.2%}".format(awayProb)
+          
               
 
         
@@ -187,8 +225,10 @@ class Competition:
                                 i+=team.homeGoals
                                 intGames+=1
                 try:
+
                         return i/intGames
                 except ZeroDivisionError:
+                        
                         return 0
 
         def getAverageGoalsConcededByHomeTeam(self, specificTeam):
@@ -207,14 +247,17 @@ class Competition:
         def getAverageGoalsByAllHomeTeams(self):
                 #Hur många mål görs i snitt av hemmalagen?
                 try:
+                        #print(str(self.averageNumberOfHomeGoals))
                         return self.averageNumberOfHomeGoals
                 except ZeroDivisionError:
+                        #print("Snitt hemmamål är 0")
                         return 0
 
         def getAverageGoalsConcededByAllAwayTeams(self):
                 try:
                         return self.averageNumberOfHomeGoals
                 except ZeroDivisionError:
+                        #print("Snitt hemmamål insläppta är 0")
                         return 0
 
         def getAverageGoalsConcededByAllHomeTeams(self):

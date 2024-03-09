@@ -1,7 +1,9 @@
 from flask import Flask, render_template
 from webscraping import getNext13Games
 from competition import *
-from stryktipset import *
+from coupon import *
+from links import *
+#from stryktipset import *
   
 # Flask constructor takes the name of 
 # current module (__name__) as argument.
@@ -20,14 +22,16 @@ def hello_world():
     myChampionship = Competition(strChampionship)
     getNext13Games(myCoupon, myPremierLeague, myChampionship)
     for row in myCoupon.couponrows:
-        if premierLeague.isTeamInCompetition(row.awayTeam):
-            premierLeague.getAllResults(row)
-        elif championship.isTeamInCompetition(row.awayTeam):
-            championship.getAllResults(row)
+        if myPremierLeague.isTeamInCompetition(row.awayTeam):
+            myPremierLeague.getAllResults(row)
+        elif myChampionship.isTeamInCompetition(row.awayTeam):
+            myChampionship.getAllResults(row)
     myCoupon.sortBestHomeTeams()
     myCoupon.sortBestAwayTeams()
     myCoupon.sortBestDrawTeams()
     myCoupon.sortListBasedOnMatchOrder()
+    myPremierLeague.printGames()
+
 
 
      #Nästkommande funktion har möjligheten att ange hur många 1 X 2 man vil ha)?

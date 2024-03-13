@@ -35,12 +35,6 @@ class Competition:
                         else:
                                 game.bet = "draw"
         
-        def exportToExcel(self, filename):
-                # Create a DataFrame from the games list
-                df = pd.DataFrame([vars(game) for game in self.games])
-
-                # Write the DataFrame to an Excel file
-                df.to_excel(filename, index=False)
                 
         def exportToCSV(self, filename):
                 with open(filename, 'w', newline='') as csvfile:

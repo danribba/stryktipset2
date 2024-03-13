@@ -68,19 +68,21 @@ class Coupon:
 
         def printCoupon(self):
                 for i in self.couponrows:
-                        print(str(i.matchnumber) +":"+ i.homeTeam +"-"+i.awayTeam+"["+i.homeProb+":"+i.drawProb+":"+i.awayProb+"]:"+i.combined)
+                        print(f"{i.matchnumber}:{i.homeTeam}-{i.awayTeam}[{i.homeProb}:{i.drawProb}:{i.awayProb}]:{i.combined}")
+
 
         def createPayloadMessage(self):
-                #För meddelande till Slack
+                #För meddelande som ska skikcas till Slack-kanalen
                 s = ""
                 for i in self.couponrows:
-                        s = s+"\n"+str(i.matchnumber) +":"+ i.homeTeam +"-"+i.awayTeam+","+i.combined
+                        s += f"\n{i.matchnumber}:{i.homeTeam}-{i.awayTeam},{i.combined}"
                 return s
         
         def printDebugInfo(self):
                 #Endast för debugsyfte
                 print("Coupon Debug Info:")
-                print("Number of Rows:", len(self.couponrows))
+                print(f"Number of Rows: {len(self.couponrows)}")
+
                 for i, row in enumerate(self.couponrows):
                     print(f"Row {i + 1} - Match: {row.matchnumber}, Teams: {row.homeTeam}-{row.awayTeam}, Combined: {row.combined}")
                     print(f"   Home Prob Order: {row.homeProb}, Away Prob Order: {row.awayProb}, Draw Prob Order: {row.drawProb}")

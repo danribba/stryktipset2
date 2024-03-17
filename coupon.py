@@ -32,16 +32,23 @@ class Coupon:
                 self.couponrows.sort(key = operator.attrgetter('homeProb'),reverse=True)
                 i=1
                 for row in self.couponrows:
+                        #print(f'Row: {row}, homeProb: {row.homeProb}:  HomeProbOrder:{i}')
                         row.homeProbOrder = i
                         i+=1
         
         def sortBestAwayTeams(self):
                 #Sorterar listan efter bästa sannlikhet att vinna på bortaplan. 
                 #Sorterar först listan och ger sedan varje rad sitt index i fältet awayProbOrder
-                self.couponrows.sort(key = operator.attrgetter('awayProb'),reverse=True)
+                #ORGINAL 
+                #self.couponrows.sort(key = operator.attrgetter('awayProb'),reverse=True)
+
+                #Ny med lamba
+                self.couponrows.sort(key=lambda x: x.awayProb, reverse=True)
+                
                 i=1
                 for row in self.couponrows:
-                        row.awayProbOrder = i
+                        print(f'Row: {row}, awayProb: {row.awayProb}:  AwayProbOrder:{i}')
+                        row.awayProbOrder = int(i)
                         i+=1
 
 

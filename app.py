@@ -3,7 +3,6 @@ from webscraping import getNext13Games
 from competition import *
 from coupon import *
 from links import *
-#from stryktipset import *
   
 # Flask constructor takes the name of 
 # current module (__name__) as argument.
@@ -30,7 +29,7 @@ def hello_world():
     myCoupon.sortBestAwayTeams()
     myCoupon.sortBestDrawTeams()
     myCoupon.sortListBasedOnMatchOrder()
-    myPremierLeague.printGames()
+    #myPremierLeague.printGames()
 
 
 

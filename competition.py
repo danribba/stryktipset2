@@ -126,6 +126,8 @@ class Competition:
         def getAllResults(self, couponRow):
                 # Uppdaterad version där vi skickar in en kupongrad för att att få ut de specifika värdena för 1 X 2
                 # 2023-04-15
+
+                #Denna tar en kupongrad som input jämfört med nedanståenden som tar en match (game) som input
                 
                 homeProb = 0
                 awayProb = 0
@@ -142,9 +144,9 @@ class Competition:
                                 else:
                                         drawProb += result.probability
 
-                couponRow.homeProb ="{:.2%}".format(homeProb)
-                couponRow.drawProb= "{:.2%}".format(drawProb)
-                couponRow.awayProb= "{:.2%}".format(awayProb)
+                couponRow.homeProb =round(homeProb*100,2)
+                couponRow.drawProb= round(drawProb*100,2)
+                couponRow.awayProb= round(awayProb*100,2)
                
         def saveProbabilitiesToGame(self, game):
                 # För att spara ner den troliga utgången i samband med att vi sparar ner varje match.  
@@ -164,10 +166,10 @@ class Competition:
                                         awayProb += result.probability
                                 else:
                                         drawProb += result.probability
-                #print("Sannolikhet hemma: " + str(homeProb))
-                self.games[-1].homeProb = "{:.2%}".format(homeProb)
-                self.games[-1].drawProb = "{:.2%}".format(drawProb)
-                self.games[-1].awayProb = "{:.2%}".format(awayProb)
+                
+                self.games[-1].homeProb = round(homeProb*100,2)
+                self.games[-1].drawProb = round(drawProb*100,2)
+                self.games[-1].awayProb = round(awayProb*100,2)
           
               
 
